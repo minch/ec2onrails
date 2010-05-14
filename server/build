@@ -1,74 +1,31 @@
-#!/usr/bin/ruby
+#!/bin/bash
 
-#    This file is part of EC2 on Rails.
-#    http://rubyforge.org/projects/ec2onrails/
 #
-#    Copyright 2007 Paul Dowman, http://pauldowman.com/
+# Runs on creation of a new instance and sets up the build environment
 #
-#    EC2 on Rails is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
-#
-#    EC2 on Rails is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-#
-#    You should have received a copy of the GNU General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Called by the new-instance script
+# 
+# See http://alestic.com/2009/06/ec2-user-data-scripts
 
+set -e -x
+export DEBIAN_FRONTEND=noninteractive
 
-# This script wraps Eric Hammond's ec2ubuntu-build-ami script ( http://alestic.com/ )
-# It passes all args directly to the ec2ubuntu-build-ami script, except for three
-# which it modifies to the following values:
-#   --distribution ubuntu
-#   --codename intrepid
-#   --script /mnt/ec2onrails/server/rakefile-wrapper 
-# Other than those three args (which will be ignored if given) this script should
-# be given the regular ec2ubuntu-build-ami args, for details see the comments at:
-# http://ec2ubuntu.googlecode.com/svn/trunk/bin/ec2ubuntu-build-ami
+echo "Running the user-data-script build..."
 
-require "fileutils"
+# Install ruby
+if ![ `which ruby` ]; then
+  echo "Installing ruby..."
+  system "sudo apt-get install rake | tee /tmp/install-ruby.log"
+fi
 
-EC2UBUNTU_VERSION = 148
+# Install rake
 
-unless File.exist? "/mnt/ec2ubuntu"
-  puts "Installing yum..."
-  system "yum install svn -y"
-end
+if ![ `which rake` ]; then
+  echo "Installing rake..."
+  system "sudo apt-get install rake | tee /tmp/install-rake.log"
+fi
 
-puts "Getting ec2ubuntu build script..."
-system "svn checkout -r #{EC2UBUNTU_VERSION} http://ec2ubuntu.googlecode.com/svn/trunk/ /mnt/ec2ubuntu"
-
-unless system "which rake"
-  puts "Installing rake..."
-  
-  FileUtils.cd "/tmp" do
-    system "wget http://rubyforge.org/frs/download.php/29752/rake-0.8.1.tgz"
-    system "tar xvf rake-0.8.1.tgz"
-  end
-  FileUtils.cd "/tmp/rake-0.8.1" do
-    system "ruby install.rb"
-  end
-end
-
-# copy all args except the ones we want to overwrite into a new array
-ec2ubuntu_args = []
-(0..(ARGV.size-1)).to_a.delete_if{|n| n%2!=0}.each do |n|
-  unless %w(--distribution --codename --script).include? ARGV[n]
-    ec2ubuntu_args << ARGV[n]
-    ec2ubuntu_args << ARGV[n+1]
-  end
-end
-
-# Call Eric Hammond's build script, passing it all the args that this script was given, 
-# except with our own values for distribution, codename, and script
-system <<-EOS
-  /mnt/ec2ubuntu/bin/ec2ubuntu-build-ami \
-    --distribution ubuntu \
-    --codename jaunty \
-    --script /mnt/ec2onrails/server/rakefile-wrapper \
-    #{ec2ubuntu_args.join(' ')}
-EOS
+# TODO:
+# cmd = "get the rake file"
+# cmd = "run the rake file"
 

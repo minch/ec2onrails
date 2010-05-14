@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Build a new instance
+# Current type is ubuntu 10.04 lucid from:
+# http://alestic.com/index.html
+
+INSTANCE=ami-fd4aa494
+KEYPAIR=trazzler-eng
+FILE=build
+COUNT=1
+TYPE=m1.large
+GROUP=www
+
+CMD="ec2-run-instances -n $COUNT -t $TYPE -g $GROUP -k $KEYPAIR --user-data-file $FILE $INSTANCE"
+echo $CMD
