@@ -15,7 +15,7 @@ export TEE="tee -a"
 export INSTALL_DIR=/tmp
 export WGET=/usr/bin/wget
 export RAKE_FILE=http://github.com/minch/ec2onrails/raw/master/server/rakefile.rb
-export RAKE="/usr/bin/rake --trace"
+export RAKE="/usr/bin/rake --trace 2>&1"
 
 export MESSAGE="user-data-script:  begin"
 echo $MESSAGE | $TEE $LOG
@@ -37,7 +37,7 @@ cd $INSTALL_DIR
 $WGET $RAKE_FILE
 
 # TODO:
-echo "run the rake file"
+echo "run the rake file" | $TEE $LOG
 $RAKE | $TEE $LOG
 
 MESSAGE="user-data-script:  end"

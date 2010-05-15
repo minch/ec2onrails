@@ -112,21 +112,21 @@ end
 
 desc "Use aptitude to install required packages inside the image's filesystem"
 task :install_packages do |t|
-  unless_completed(t) do
+ unless_completed(t) do
     ENV['DEBIAN_FRONTEND'] = 'noninteractive'
     ENV['LANG'] = ''
     run_sudo "apt-get autoremove -y"
     run_sudo "aptitude update"
     run_sudo "aptitude install -y #{@packages.join(' ')}"
     run_sudo "aptitude clean"
-  else
-    puts "install packages completed"
   end
 end
 
 desc "Install required ruby gems inside the image's filesystem"
 task :install_gems => [:install_packages] do |t|
+  puts "install_gems: begin"
   unless_completed(t) do
+    puts "install_gems: unless_completed:  begin"
     version = "1.3.5"
     dir = "60718"
 
@@ -144,7 +144,9 @@ task :install_gems => [:install_packages] do |t|
     @rubygems.each do |g|
       run_sudo "gem install #{g} --no-rdoc --no-ri"
     end
+    puts "install_gems: unless_completed:  end"
   end
+  puts "install_gems: end"
 end
 
 desc "Install nginx from source"
