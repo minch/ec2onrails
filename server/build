@@ -36,8 +36,8 @@ cd $INSTALL_DIR
 $WGET $RAKE_FILE
 
 # TODO:
-# cmd = "run the rake file"
-# rake --trace | $TEE $LOG
+cmd = "run the rake file"
+rake --trace | $TEE $LOG
 
 MESSAGE="user-data-script:  end"
 echo $MESSAGE | $TEE $LOG

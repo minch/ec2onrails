@@ -24,7 +24,7 @@
 require "rake/clean"
 require 'yaml'
 require 'erb'
-require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
+# require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
 
 # package notes:
 # * gcc:            libraries needed to compile c/c++ files from source
@@ -94,7 +94,8 @@ require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
 @build_root = "/mnt/build"
 @fs_dir = "#{@build_root}/ubuntu"
 
-@version = Ec2onrails::VersionHelper.string
+# @version = Ec2onrails::VersionHelper.string
+@version = 'ami-fd4aa494'
 
 task :default => :configure
 
