@@ -9,23 +9,30 @@
 
 set -e -x
 export DEBIAN_FRONTEND=noninteractive
+export LOG=/tmp/install.log
+export APT_INSTALL="sudo apt-get install -y"
+export TEE="tee -a"
 
-echo "Running the user-data-script build..."
+export MESSAGE="user-data-script:  begin"
+echo $MESSAGE | $TEE $LOG
 
 # Install ruby
-if ![ `which ruby` ]; then
+if [ ! `which ruby` ]; then
   echo "Installing ruby..."
-  system "sudo apt-get install rake | tee /tmp/install-ruby.log"
+  $APT_INSTALL ruby | $TEE $LOG
 fi
 
 # Install rake
 
-if ![ `which rake` ]; then
+if [ ! `which rake` ]; then
   echo "Installing rake..."
-  system "sudo apt-get install rake | tee /tmp/install-rake.log"
+  $APT_INSTALL rake | $TEE $LOG
 fi
 
 # TODO:
 # cmd = "get the rake file"
 # cmd = "run the rake file"
+
+MESSAGE="user-data-script:  end"
+echo $MESSAGE | $TEE $LOG
 

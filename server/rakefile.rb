@@ -87,12 +87,7 @@ require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
   "optiflag",
   "passenger",
   "rails",
-  "rails -v '~> 2.3.4'",
-  "rails -v '~> 2.2.3'",
-  "rails -v '~> 2.1.2'",
-  "rails -v '~> 2.0.5'",
-  "rails -v '~> 1.2.6'",
-  "rake",
+  "rails -v '~> 2.3.5'",
   "right_aws"
 ]
 

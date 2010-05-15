@@ -12,4 +12,5 @@ TYPE=m1.large
 GROUP=www
 
 CMD="ec2-run-instances -n $COUNT -t $TYPE -g $GROUP -k $KEYPAIR --user-data-file $FILE $INSTANCE"
-echo $CMD
+echo "Running:  $CMD"
+$CMD
