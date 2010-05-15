@@ -180,7 +180,7 @@ task :install_nginx => [:install_packages, :install_gems] do |t|
 end
 
 desc "Install Ubuntu packages, download and compile other software, and install gems"
-task :install_software => [:require_root, :install_gems, :install_packages,
+task :install_software => [:install_gems, :install_packages,
                            :install_nginx]
 
 desc "Configure the image"
