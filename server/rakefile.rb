@@ -119,6 +119,8 @@ task :install_packages do |t|
     run_sudo "aptitude update"
     run_sudo "aptitude install -y #{@packages.join(' ')}"
     run_sudo "aptitude clean"
+  else
+    puts "install packages completed"
   end
 end
 
@@ -185,7 +187,9 @@ task :install_software => [:install_gems, :install_packages,
 
 desc "Configure the image"
 task :configure => [:install_software] do |t|
+  puts ":configure:  begin"
   unless_completed(t) do
+    puts ":configure:  unless_completed:  begin"
     sh("cp -r files/* #{@fs_dir}")
     replace("#{@fs_dir}/etc/motd.tail", /!!VERSION!!/, "Version #{@version}")
 
@@ -221,7 +225,9 @@ task :configure => [:install_software] do |t|
     run_sudo "postalias /etc/aliases"
 
     run_sudo "chmod 0440 /etc/sudoers"
+    puts ":configure:  unless_completed:  end"
   end
+  puts ":configure:  end"
 end
 
 desc "This task is for deploying the contents of /files to a running server image to test config file changes without rebuilding."
@@ -233,7 +239,7 @@ end
 ##################
 
 # Execute a given block and touch a stampfile. The block won't be run if the stampfile exists.
-def unless_completed(task, &proc)
+ndef unless_completed(task, &proc)
   stampfile = "#{@build_root}/#{task.name}.completed"
   unless File.exists?(stampfile)
     yield
