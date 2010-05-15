@@ -32,8 +32,8 @@ require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
 # * nano/vim/less:  simle file editors and viewer
 # * git-core:       because we are all using git now, aren't we?
 # * xfsprogs:       help with freezing and resizing of persistent volumes
-# 
-  
+#
+
 @packages = %w(
   adduser
   bison
@@ -99,7 +99,7 @@ require "#{File.dirname(__FILE__)}/../gem/lib/ec2onrails/version_helper"
 task :default => :configure
 
 desc "Removes all build files"
-task :clean_all => :require_root do |t|
+task :clean_all do |t|
   puts "Unmounting proc and dev from #{@build_root}..."
   run "umount #{@build_root}/ubuntu/proc", true
   run "umount #{@build_root}/ubuntu/dev", true
@@ -108,58 +108,53 @@ task :clean_all => :require_root do |t|
   rm_rf @build_root
 end
 
-task :require_root do |t|
-  if `whoami`.strip != 'root'
-    raise "Sorry, this buildfile must be run as root."
-  end
-end
 
 desc "Use aptitude to install required packages inside the image's filesystem"
-task :install_packages => :require_root do |t|
+task :install_packages do |t|
   unless_completed(t) do
     ENV['DEBIAN_FRONTEND'] = 'noninteractive'
     ENV['LANG'] = ''
-    run_chroot "apt-get autoremove -y"
-    run_chroot "aptitude update"
-    run_chroot "aptitude install -y #{@packages.join(' ')}"
-    run_chroot "aptitude clean"
+    run_sudo "apt-get autoremove -y"
+    run_sudo "aptitude update"
+    run_sudo "aptitude install -y #{@packages.join(' ')}"
+    run_sudo "aptitude clean"
   end
 end
 
 desc "Install required ruby gems inside the image's filesystem"
-task :install_gems => [:require_root, :install_packages] do |t|
+task :install_gems => [:install_packages] do |t|
   unless_completed(t) do
     version = "1.3.5"
     dir = "60718"
-    
+
     filename = "rubygems-#{version}.tgz"
     url = "http://rubyforge.org/frs/download.php/#{dir}/#{filename}"
-    run_chroot "sh -c 'cd /tmp && wget -q #{url} && tar zxf #{filename}'"
-    run_chroot "sh -c 'cd /tmp/rubygems-#{version} && ruby setup.rb'"
-    run_chroot "ln -sf /usr/bin/gem1.8 /usr/bin/gem"
+    run_sudo "sh -c 'cd /tmp && wget -q #{url} && tar zxf #{filename}'"
+    run_sudo "sh -c 'cd /tmp/rubygems-#{version} && ruby setup.rb'"
+    run_sudo "ln -sf /usr/bin/gem1.8 /usr/bin/gem"
     #NOTE: this will update to the most recent rubygems version even if we haven't updated the url here
-    run_chroot "gem update --system --no-rdoc --no-ri"
-    run_chroot "gem update --no-rdoc --no-ri"
-    run_chroot "gem sources -a http://gems.github.com"
-    run_chroot "gem install gemcutter --no-rdoc --no-ri"
-    run_chroot "gem tumble" # set gemcutter as default gem server
+    run_sudo "gem update --system --no-rdoc --no-ri"
+    run_sudo "gem update --no-rdoc --no-ri"
+    run_sudo "gem sources -a http://gems.github.com"
+    run_sudo "gem install gemcutter --no-rdoc --no-ri"
+    run_sudo "gem tumble" # set gemcutter as default gem server
     @rubygems.each do |g|
-      run_chroot "gem install #{g} --no-rdoc --no-ri"
+      run_sudo "gem install #{g} --no-rdoc --no-ri"
     end
   end
 end
 
 desc "Install nginx from source"
-task :install_nginx => [:require_root, :install_packages, :install_gems] do |t|
+task :install_nginx => [:install_packages, :install_gems] do |t|
   unless_completed(t) do
-    
+
     # To work around a Passenger bug, we need to edit the Rakefile.
     # Unfortunately this is a bit brittle and will break when Passenger is updated
     # The bug: http://code.google.com/p/phusion-passenger/issues/detail?id=316
-    # The solution is to add -mno-tls-direct-seg-refs to the compiler options: 
+    # The solution is to add -mno-tls-direct-seg-refs to the compiler options:
     #   http://blog.pacharest.com/2009/08/a-bit-technical-nginx-passenger-4gb-seg-fixup/
     replace_line("#{@fs_dir}/usr/lib/ruby/gems/1.8/gems/passenger-2.2.5/Rakefile", %q(EXTRA_CXXFLAGS = "-Wall -mno-tls-direct-seg-refs #{OPTIMIZATION_FLAGS}"), 50)
-    
+
     nginx_version = "nginx-0.7.60"
     nginx_tar = "#{nginx_version}.tar.gz"
 
@@ -167,9 +162,9 @@ task :install_nginx => [:require_root, :install_packages, :install_gems] do |t|
     fair_bal_img = "http://github.com/gnosek/nginx-upstream-fair/tarball/master"
     src_dir = "/tmp/src/nginx"
     # Make sure the dir is created but empty...lets start afresh
-    run_chroot "mkdir -p -m 755 #{src_dir}/ &&  rm -rf #{src_dir}/*" 
-    run_chroot "sh -c 'cd #{src_dir} && wget -q #{nginx_img} && tar -xzf #{nginx_tar}'"
-    run_chroot "sh -c 'cd #{src_dir}/#{nginx_version} && \
+    run_sudo "mkdir -p -m 755 #{src_dir}/ &&  rm -rf #{src_dir}/*"
+    run_sudo "sh -c 'cd #{src_dir} && wget -q #{nginx_img} && tar -xzf #{nginx_tar}'"
+    run_sudo "sh -c 'cd #{src_dir}/#{nginx_version} && \
        ./configure \
          --sbin-path=/usr/sbin \
          --conf-path=/etc/nginx/nginx.conf \
@@ -184,46 +179,47 @@ task :install_nginx => [:require_root, :install_packages, :install_gems] do |t|
 end
 
 desc "Install Ubuntu packages, download and compile other software, and install gems"
-task :install_software => [:require_root, :install_gems, :install_packages, :install_nginx]
+task :install_software => [:require_root, :install_gems, :install_packages,
+                           :install_nginx]
 
 desc "Configure the image"
-task :configure => [:require_root, :install_software] do |t|
+task :configure => [:install_software] do |t|
   unless_completed(t) do
     sh("cp -r files/* #{@fs_dir}")
     replace("#{@fs_dir}/etc/motd.tail", /!!VERSION!!/, "Version #{@version}")
 
-    run_chroot "/usr/sbin/adduser --system --group --disabled-login --no-create-home nginx"
-    run_chroot "/usr/sbin/adduser --gecos ',,,' --disabled-password app"
-    run_chroot "/usr/sbin/addgroup rootequiv"
+    run_sudo "/usr/sbin/adduser --system --group --disabled-login --no-create-home nginx"
+    run_sudo "/usr/sbin/adduser --gecos ',,,' --disabled-password app"
+    run_sudo "/usr/sbin/addgroup rootequiv"
 
-    run_chroot "cp /root/.gemrc /home/app" # so the app user also has access to gems.github.com
-    run_chroot "chown app:app /home/app/.gemrc"
+    run_sudo "cp /root/.gemrc /home/app" # so the app user also has access to gems.github.com
+    run_sudo "chown app:app /home/app/.gemrc"
 
     run "echo '. /usr/local/ec2onrails/config' >> #{@fs_dir}/root/.bashrc"
     run "echo '. /usr/local/ec2onrails/config' >> #{@fs_dir}/home/app/.bashrc"
-    
+
     %w(mysql auth.log daemon.log kern.log mail.err mail.info mail.log mail.warn syslog user.log).each do |f|
       rm_rf "#{@fs_dir}/var/log/#{f}"
-      run_chroot "ln -sf /mnt/log/#{f} /var/log/#{f}"
+      run_sudo "ln -sf /mnt/log/#{f} /var/log/#{f}"
     end
 
     # Create symlinks to run scripts on startup
-    run_chroot "update-rc.d ec2-first-startup start 91 S ."
-    run_chroot "update-rc.d ec2-every-startup start 92 S ."
-    
+    run_sudo "update-rc.d ec2-first-startup start 91 S ."
+    run_sudo "update-rc.d ec2-every-startup start 92 S ."
+
     # Disable the services that will be managed by god, depending on the roles
     %w(nginx mysql memcached varnish varnishncsa).each do |service|
-      run_chroot "update-rc.d -f #{service} remove"
-      run_chroot "update-rc.d #{service} stop 20 2 3 4 5 ."
+      run_sudo "update-rc.d -f #{service} remove"
+      run_sudo "update-rc.d #{service} stop 20 2 3 4 5 ."
     end
-    
+
     # God is started by upstart so that it will be restarted automatically if it dies,
     # see /etc/event.d/god
-    
+
     # Create the mail aliases db
-    run_chroot "postalias /etc/aliases"
-    
-    run_chroot "chmod 0440 /etc/sudoers"
+    run_sudo "postalias /etc/aliases"
+
+    run_sudo "chmod 0440 /etc/sudoers"
   end
 end
 
@@ -239,7 +235,7 @@ end
 def unless_completed(task, &proc)
   stampfile = "#{@build_root}/#{task.name}.completed"
   unless File.exists?(stampfile)
-    yield  
+    yield
     touch stampfile
   end
 end
@@ -248,8 +244,14 @@ def run_chroot(command, ignore_error = false)
   run "chroot '#{@fs_dir}' #{command}", ignore_error
 end
 
-def run(command, ignore_error = false)
-  puts "*** #{command}" 
+def run_sudo(command, ignore_error)
+  sudo = true
+  run(command, ignore_error, sudo)
+end
+
+def run(command, ignore_error = false, sudo = false)
+  command = "sudo #{command}" if sudo
+  puts "*** #{command}"
   result = system command
   raise("error: #{$?}") unless result || ignore_error
 end

@@ -12,6 +12,9 @@ export DEBIAN_FRONTEND=noninteractive
 export LOG=/tmp/install.log
 export APT_INSTALL="sudo apt-get install -y"
 export TEE="tee -a"
+export INSTALL_DIR=/tmp
+export WGET=/usr/bin/wget
+export RAKE_FILE=http://github.com/minch/ec2onrails/raw/master/server/rakefile.rb
 
 export MESSAGE="user-data-script:  begin"
 echo $MESSAGE | $TEE $LOG
@@ -23,15 +26,18 @@ if [ ! `which ruby` ]; then
 fi
 
 # Install rake
-
 if [ ! `which rake` ]; then
   echo "Installing rake..."
   $APT_INSTALL rake | $TEE $LOG
 fi
 
-# TODO:
+cd $INSTALL_DIR
 # cmd = "get the rake file"
+$WGET $RAKE_FILE
+
+# TODO:
 # cmd = "run the rake file"
+# rake --trace | $TEE $LOG
 
 MESSAGE="user-data-script:  end"
 echo $MESSAGE | $TEE $LOG
