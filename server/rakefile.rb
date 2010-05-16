@@ -171,7 +171,7 @@ task :install_nginx => [:install_packages, :install_gems] do |t|
     run_sudo "sh -c 'cd #{src_dir} && wget -q #{nginx_img} && tar -xzf #{nginx_tar}'"
     run_sudo "sh -c 'cd #{src_dir}/#{nginx_version} && \
        ./configure \
-         --sbin-path=/usr/sbin \
+         --sbin-pah=/usr/sbin \
          --conf-path=/etc/nginx/nginx.conf \
          --pid-path=/var/run/nginx.pid \
          --error-log-path=/mnt/log/ngninx/default_error.log \
@@ -183,8 +183,17 @@ task :install_nginx => [:install_packages, :install_gems] do |t|
   end
 end
 
+desc "Create the build dir"
+task :create_build_dir do |t|
+  unless_completed(t) do
+    cmd = "mkdir -p #{fs_dir}"
+    puts "#{cmd}"
+    run_sudo(cmd)
+  end
+end
+
 desc "Install Ubuntu packages, download and compile other software, and install gems"
-task :install_software => [:install_gems, :install_packages,
+task :install_software => [:create_build_dir, :install_gems, :install_packages,
                            :install_nginx]
 
 desc "Configure the image"
@@ -192,8 +201,6 @@ task :configure => [:install_software] do |t|
   puts ":configure:  begin"
   unless_completed(t) do
     puts ":configure:  unless_completed:  begin"
-    cmd = "mkdir -p #{fs_dir}"
-    run_sudo(cmd)
     sh("cp -r files/* #{@fs_dir}")
     replace("#{@fs_dir}/etc/motd.tail", /!!VERSION!!/, "Version #{@version}")
 
