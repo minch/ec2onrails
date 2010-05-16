@@ -192,7 +192,7 @@ task :configure => [:install_software] do |t|
   puts ":configure:  begin"
   unless_completed(t) do
     puts ":configure:  unless_completed:  begin"
-    cms = "mkdir -p #{fs_dir}"
+    cmd = "mkdir -p #{fs_dir}"
     run_sudo(cmd)
     sh("cp -r files/* #{@fs_dir}")
     replace("#{@fs_dir}/etc/motd.tail", /!!VERSION!!/, "Version #{@version}")
