@@ -186,7 +186,7 @@ end
 desc "Create the build dir"
 task :create_build_dir do |t|
   unless_completed(t) do
-    cmd = "mkdir -p #{fs_dir}"
+    cmd = "mkdir -p #{@fs_dir}"
     puts "#{cmd}"
     run_sudo(cmd)
   end
