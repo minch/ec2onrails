@@ -189,7 +189,7 @@ task :create_build_dir do |t|
     cmd = "mkdir -p #{@fs_dir}"
     puts "#{cmd}"
     run_sudo(cmd)
-    cmd = "chown -R ubuntu:ubuntu #{@fs_dir}"
+    cmd = "chown -R ubuntu:ubuntu #{@build_root}"
     run_sudo(cmd)
   end
 end
