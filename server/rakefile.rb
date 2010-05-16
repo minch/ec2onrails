@@ -241,7 +241,7 @@ end
 ##################
 
 # Execute a given block and touch a stampfile. The block won't be run if the stampfile exists.
-ndef unless_completed(task, &proc)
+def unless_completed(task, &proc)
   stampfile = "#{@build_root}/#{task.name}.completed"
   unless File.exists?(stampfile)
     yield
