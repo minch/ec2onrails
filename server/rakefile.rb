@@ -253,7 +253,7 @@ def run_chroot(command, ignore_error = false)
   run "chroot '#{@fs_dir}' #{command}", ignore_error
 end
 
-def run_sudo(command, ignore_error)
+def run_sudo(command, ignore_error = false)
   sudo = true
   run(command, ignore_error, sudo)
 end
