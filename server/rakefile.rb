@@ -174,7 +174,7 @@ task :install_nginx => [:install_packages, :install_gems] do |t|
          --sbin-path=/usr/sbin \
          --conf-path=/etc/nginx/nginx.conf \
          --pid-path=/var/run/nginx.pid \
-         --error-log-path=/mnt/log/nginx/default_error.log \
+         --error-log-path=/mnt/log/ngninx/default_error.log \
          --with-http_ssl_module \
          --with-http_stub_status_module \
          --add-module=`/usr/bin/passenger-config --root`/ext/nginx && \
@@ -192,6 +192,8 @@ task :configure => [:install_software] do |t|
   puts ":configure:  begin"
   unless_completed(t) do
     puts ":configure:  unless_completed:  begin"
+    cms = "mkdir -p #{fs_dir}"
+    run_sudo(cmd)
     sh("cp -r files/* #{@fs_dir}")
     replace("#{@fs_dir}/etc/motd.tail", /!!VERSION!!/, "Version #{@version}")
 
