@@ -7,3 +7,4 @@ gem/tmp/*
 server/test/test_app/db/*.sqlite3
 server/test/test_app/log/*
 server/test/test_app/tmp/*
+*swp
