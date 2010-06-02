@@ -18,8 +18,13 @@
 # 
 #
 
+GEM_INSTALL="gem install -y"
+
 # remove the old ruby (probably not necessary)
 apt-get remove ruby ruby1.8 ruby1.8-dev libruby libruby1.8
+
+# remove old rubygem
+ln -nfs /usr/local/bin/gem /usr/bin/gem
 
 cd /tmp
 wget http://rubyforge.org/frs/download.php/68720/ruby-enterprise_1.8.7-2010.01_amd64.deb
@@ -30,13 +35,13 @@ ln -s /usr/local/bin/ruby /usr/bin/ruby
 echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/ec2onrails/bin"' > /etc/environment
 
 # pre-req gems
-gem install optiflag
-gem install mysql
-gem install mongrel
-gem install mongrel_rails
-gem install mongrel_cluster
+$GEM_INSTALL optiflag
+$GEM_INSTALL mysql
+$GEM_INSTALL mongrel
+$GEM_INSTALL mongrel_rails
+$GEM_INSTALL mongrel_cluster
 
 # remove the old rake
 rm -f /usr/bin/rake
-gem install rake
+$GEM_INSTALL rake
 ln -s /usr/local/bin/rake /usr/bin/rake
