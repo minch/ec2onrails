@@ -19,9 +19,10 @@
 #
 
 GEM_INSTALL="gem install -y"
+APT_REMOVE="apt-get remove -y"
 
 # remove the old ruby (probably not necessary)
-apt-get remove ruby ruby1.8 ruby1.8-dev libruby libruby1.8
+$APT_REMOVE ruby ruby1.8 ruby1.8-dev libruby libruby1.8
 
 # remove old rubygem
 ln -nfs /usr/local/bin/gem /usr/bin/gem
