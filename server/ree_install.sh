@@ -39,7 +39,6 @@ echo 'PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lo
 $GEM_INSTALL optiflag
 $GEM_INSTALL mysql
 $GEM_INSTALL mongrel
-$GEM_INSTALL mongrel_rails
 $GEM_INSTALL mongrel_cluster
 
 # remove the old rake
