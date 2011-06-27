@@ -20,6 +20,7 @@
 
 GEM_INSTALL="gem install -y"
 APT_REMOVE="apt-get remove -y"
+GEM_VERSION=0.8.7
 
 # remove the old ruby (probably not necessary)
 $APT_REMOVE ruby ruby1.8 ruby1.8-dev libruby libruby1.8
@@ -43,5 +44,5 @@ $GEM_INSTALL mongrel_cluster
 
 # remove the old rake
 rm -f /usr/bin/rake
-$GEM_INSTALL rake
+$GEM_INSTALL --version $GEM_VERSION rake
 ln -s /usr/local/bin/rake /usr/bin/rake
